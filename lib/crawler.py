@@ -41,7 +41,7 @@ class Crawler():
 			return r.text
 	
 	def scrape_html(self, filename:str()):
-		""" Scrape - (title:string,published_date:string,location:string,skills:list) """
+		""" Scrape - (title:string,date:string,location:string,skills:list) """
 		job_titles = list()
 		job_dates = list()
 		job_locations = list()
@@ -67,8 +67,8 @@ class Crawler():
 				if date.lower() in ["днес", "вчера"]:
 					date = datetime.today()
 					date = date.strftime("%d.%m.%y")
-				date = str(datetime.strptime(str(date),"%d.%m.%y"))
-				job_dates.append(date)
+				date = datetime.strptime(date,"%d.%m.%y").date()
+				job_dates.append(str(date))
 				
 				# Location
 				location = job.find("div", class_="card-info card__subtitle")
@@ -88,16 +88,16 @@ class Crawler():
 						
 					job_skills.append(skill_each)
 
-			try:
-				for title_, date_, loc_, skills_ in zip(job_titles,job_dates,job_locations, job_skills, strict=True):
-					print(title_, date_, loc_, skills_, sep="\n")
-					break
-			except:
-				print(f"""!!!Job/s missing either:
-				titles:{len(job_titles)}
-				dates {len(job_dates)}
-				locations {len(job_locations)}
-				skills: {len(job_skills)}""")
+			# try:
+			# 	for title_, date_, loc_, skills_ in zip(job_titles,job_dates,job_locations, job_skills, strict=True):
+			# 		print(title_, date_, loc_, skills_, sep="\n")
+			# 		break
+			# except:
+			# 	print(f"""!!!Job/s missing either:
+			# 	titles:{len(job_titles)}
+			# 	dates {len(job_dates)}
+			# 	locations {len(job_locations)}
+			# 	skills: {len(job_skills)}""")
 		
 		return [[title, date, loc, str(",".join(skills))] for title, date, loc, skills in zip(job_titles,job_dates,job_locations,job_skills)]
 
@@ -109,7 +109,7 @@ class Crawler():
 		for url in self.seed:
 			html = self.get_html(url)
 			self.write_to_file("jobs.bg.html", html)
-			
+
 		content = self.scrape_html("jobs.bg.html")	
 		self.db.drop_jobsbg_table()
 		self.db.create_jobsbg_table()
