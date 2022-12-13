@@ -21,4 +21,4 @@ Requirements
 3. Install required modules -> pip install -r requirements.txt
 4. Run main.py
 
-![](C:\Users\Nikola\Downloads\new_logo_underline.png)
+<img src="new_logo_underline.png" alt="">
