@@ -1,6 +1,8 @@
 Jobs.bg Webcrawler
 ==================
 
+![logo](https://user-images.githubusercontent.com/100529135/207468197-274bf10e-160d-4617-a46f-1c925c1553f0.png)
+
 About Project
 ---
 1. Fetch html
@@ -21,4 +23,3 @@ Requirements
 3. Install required modules -> pip install -r requirements.txt
 4. Run main.py
 
-![logo](https://user-images.githubusercontent.com/100529135/207468197-274bf10e-160d-4617-a46f-1c925c1553f0.png)
