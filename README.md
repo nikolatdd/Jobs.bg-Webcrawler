@@ -1,7 +1,7 @@
 <h1 align="center"> Jobs.bg Webcrawler </h1>
 
 **Author**: Me <br />
-**Created**: November-December 2022
+**Created**: November-December 2022 <br />
 ![logo](https://user-images.githubusercontent.com/100529135/207468197-274bf10e-160d-4617-a46f-1c925c1553f0.png) <br />
 
 About Project
