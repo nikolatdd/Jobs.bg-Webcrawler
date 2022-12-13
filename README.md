@@ -1,6 +1,6 @@
 #Jobs.bg Webcrawler
 
-#H1 About Project
+About Project
 ---
 1. Fetch html
 2. Scrape latest 20 jobs containing the required skill "Python"
@@ -9,7 +9,7 @@
 4. Create PyQt6 GUI to implement the steps above
    => Show database data with PyQt6's TableViewWidget
 
-#H1 Requirements
+Requirements
 --- 
 0. Have MySql installed on local machine
 1. Change current working directory to main project directory -> ./Jobs.bg-Webcrawler/
