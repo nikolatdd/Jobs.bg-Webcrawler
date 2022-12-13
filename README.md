@@ -2,6 +2,7 @@
 
 **Author**: Me <br />
 **Created**: November-December 2022 <br />
+![logo](https://user-images.githubusercontent.com/100529135/207470106-d45720f4-f569-4fa6-be36-53b6d01f6215.jpg)
 ![logo](https://user-images.githubusercontent.com/100529135/207468197-274bf10e-160d-4617-a46f-1c925c1553f0.png) <br />
 
 About Project
