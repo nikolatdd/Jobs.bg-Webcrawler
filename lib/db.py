@@ -6,12 +6,13 @@ except:
 
 class DB():
     def __init__(self):
-        mysql_config = read_db_config('config.ini', 'mysql')
-        print(mysql_config)
+        self.mysql_config = read_db_config('config.ini', 'mysql')
+        print(self.mysql_config)
         try:
-            self.conn = mc.connect(**mysql_config)
+            self.conn = mc.connect(**self.mysql_config)
             # self.drop_jobsbg_table()
             # self.create_jobsbg_table()
+            
         except mc.Error as e:
             print(e)
 
@@ -19,9 +20,8 @@ class DB():
     def create_jobsbg_table(self):
         sql = """
             CREATE TABLE IF NOT EXISTS jobsbg(
-                id INT AUTO_INCREMENT PRIMARY KEY,
                 title VARCHAR(100) NOT NULL,
-                pub_date VARCHAR(20) NOT NULL,
+                pub_date VARCHAR(20),
                 location TEXT,
                 skills TEXT,
                 created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -49,7 +49,6 @@ class DB():
                 VALUES ( %s, %s, %s, %s) 
             """ 
         with self.conn.cursor() as cursor:
-            
             cursor.executemany(sql, rows_data)
             self.conn.commit()
 
@@ -57,7 +56,7 @@ class DB():
 
         sql = """
             INSERT IGNORE INTO jobsbg
-                (title, pub_date, location, skills)
+                (title, pub_date, location, skills ,created_at, updated_at)
                 VALUES ( %s, %s, %s, %s)
         """
 
@@ -66,7 +65,7 @@ class DB():
             self.conn.commit()
 
     def select_all_data(self):
-        sql = "SELECT id, title, pub_date, location, skills FROM  jobsbg"
+        sql = "SELECT title, pub_date, location, skills ,created_at, updated_at FROM  jobsbg"
 
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
@@ -86,14 +85,18 @@ class DB():
             raise ValueError('No data in table')
 
     def get_column_names(self):
-        sql = "SELECT id, title, pub_date,location, skills FROM jobsbg LIMIT 1;"
+        sql = "SELECT title, pub_date, location, skills ,created_at, updated_at FROM jobsbg LIMIT 1;"
 
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
             result = cursor.fetchone()
+        return ["title","pub_date","location", "skills", "created_at", "updated_at"]
 
 if __name__ == '__main__':
     db = DB()
+    db.drop_jobsbg_table()
     db.create_jobsbg_table()
+    columnnames = db.get_column_names()
+    print(columnnames)
     db.get_last_updated_date()
         
