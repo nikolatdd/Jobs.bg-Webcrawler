@@ -17,7 +17,8 @@ Requirements
 2. Create virtual enviorment -> python3 -m venv .venv <br />
    Enter new virtual enviorment -> .\venv\Scripts\activate  <br />
       or  for Comand Prompt -> .\.venv\Scripts\Activate.ps1 <br /> 
-      for Powershell,Bash.. -> .\.venv\Scripts\Activate.bat
+      or for Powershell,Bash.. -> .\.venv\Scripts\Activate.bat
 3. Install required modules -> pip install -r requirements.txt
 4. Run main.py
-	
+
+![](C:\Users\Nikola\Downloads\new_logo_underline.png)
