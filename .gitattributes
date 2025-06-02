@@ -1,0 +1,3 @@
+# Force linguist to count only Python files for language stats
+*.py linguist-language=Python
+*.html linguist-language=ignore
