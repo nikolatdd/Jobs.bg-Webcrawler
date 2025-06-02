@@ -20,4 +20,9 @@ __*
 ___*
 *.ipynb_checkpoints
 config.ini
+<<<<<<< HEAD
 robots.txt
+=======
+robots.txt
+# data/jobs.bg.html
+>>>>>>> d024165 (Update .gitignore)
