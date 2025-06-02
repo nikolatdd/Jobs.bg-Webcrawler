@@ -13,7 +13,11 @@ def read_db_config(filename='config.ini', section='mysql'):
 	# create parser and read the configuration file
 	parser = ConfigParser()
 
-	if parser.read(os.path.join(package_directory, filename)):
+	# Look for config.ini in the parent directory of lib
+	project_root = os.path.dirname(package_directory)
+	config_path = os.path.join(project_root, filename)
+
+	if parser.read(config_path):
 		db_config = {}
 		if parser.has_section(section):
 			items = parser.items(section)

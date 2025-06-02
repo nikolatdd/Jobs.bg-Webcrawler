@@ -7,6 +7,15 @@ try:
 except:
 	from lib.db import DB
 
+class NumberSortProxyModel(qtc.QSortFilterProxyModel):
+    def lessThan(self, left, right):
+        left_data = left.data()
+        right_data = right.data()
+        try:
+            return float(left_data) < float(right_data)
+        except (ValueError, TypeError):
+            return str(left_data) < str(right_data)
+
 class TableView(qtw.QTableView):
 	def __init__(self, *args, **kwargs):
 		super().__init__()
@@ -19,7 +28,7 @@ class TableView(qtw.QTableView):
 
 		model = self.setup_model()
 
-		self.filter_proxy_model = qtc.QSortFilterProxyModel()
+		self.filter_proxy_model = NumberSortProxyModel()
 		self.filter_proxy_model.setSourceModel(model)
 		self.filter_proxy_model.setFilterCaseSensitivity(qtc.Qt.CaseSensitivity.CaseInsensitive)
 		self.filter_proxy_model.setFilterKeyColumn(1)
@@ -62,8 +71,9 @@ class TableView(qtw.QTableView):
 		model.setHorizontalHeaderLabels(self.column_names)
 
 		for i, row in enumerate(self.data):
-			# items = [qtg.QStandardItem(str(item)) for item in row]
-
+			# If row is a dict (from DictCursor), get values in column order
+			if isinstance(row, dict):
+				row = [row.get(col, '') for col in self.column_names]
 			items = []
 			for field in row:
 				item = qtg.QStandardItem()
@@ -86,9 +96,22 @@ class TableView(qtw.QTableView):
 	def set_filter_column(self,index):
 		self.filter_proxy_model.setFilterKeyColumn(index)
 
+	def set_filter_text(self, text):
+		# Use regular expression filtering for more flexibility
+		self.filter_proxy_model.setFilterRegularExpression(qtc.QRegularExpression(text))
+
 	def get_last_updated_date(self):
-		last_updated_date=self.db.get_last_updated_date()
+		last_updated_date = self.db.get_last_updated_date()
+		if last_updated_date is None:
+			return "N/A"
 		return last_updated_date.strftime('%d.%m.%y, %H:%M:%S')
+
+	def refresh_data(self):
+		"""Reload data from the database and update the table model."""
+		self.data = self.db.select_all_data()
+		model = self.setup_model()
+		self.filter_proxy_model.setSourceModel(model)
+		self.setModel(self.filter_proxy_model)
 
 class TableViewWidget(qtw.QWidget):
 	def __init__(self, parent, *args, **kwargs):
@@ -97,6 +120,16 @@ class TableViewWidget(qtw.QWidget):
 		self.parent = parent
 		self.setWindowTitle("Jobs.bg Table Data")
 		self.setup_gui()
+		self._centered = False  # Track if centering has been done
+
+	def showEvent(self, event):
+		super().showEvent(event)
+		if not self._centered:
+			qr = self.frameGeometry()
+			cp = qtw.QApplication.primaryScreen().availableGeometry().center()
+			qr.moveCenter(cp)
+			self.move(qr.topLeft())
+			self._centered = True
 
 	def setup_gui(self):
 		### init table view:
@@ -124,6 +157,9 @@ class TableViewWidget(qtw.QWidget):
 		comboBox.addItems(["{0}".format(col) for col in self.tableView.column_names])
 		comboBox.setCurrentText('title')
 		comboBox.currentIndexChanged.connect(lambda idx:self.tableView.set_filter_column(idx))
+
+		filterLineEdit.textChanged.connect(lambda text: self.tableView.set_filter_text(text))
+		self.comboBox = comboBox
 
 		filterBoxLayout = qtw.QHBoxLayout()
 		filterBoxLayout.addWidget(filterLabel)

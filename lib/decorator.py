@@ -1,5 +1,4 @@
 from time import perf_counter
-# from functools import wraps
 
 def count_timer(func):
     def inner(*args, **kwargs):

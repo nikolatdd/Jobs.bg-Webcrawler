@@ -50,6 +50,7 @@ class MainWindow(qtw.QMainWindow,Ui_MainWindow):
     def showdata(self):
         "Show TableView table from db"
         self.tableViewWidget = TableViewWidget(parent=self)
+        self.tableViewWidget.tableView.refresh_data()  # Ensure data is up-to-date
         self.tableViewWidget.show()
     
 

@@ -62,7 +62,7 @@ class Crawler():
 				# Date
 				date = job.find("div", class_="card-date")
 				date = date.next_element.text
-				date = re.sub("[\s]","", date)
+				date = re.sub(r"[\s]","", date)
 				if date.lower() in ["днес", "вчера"]:
 					date = datetime.today()
 					date = date.strftime("%d.%m.%y")
@@ -70,10 +70,16 @@ class Crawler():
 				job_dates.append(str(date))
 				
 				# Location
-				location = job.find("div", class_="card-info card__subtitle")
-				location = location.next_element.text
-				location = re.sub("[\s](Заплата);","", location)
-				job_locations.append(location)
+				location_div = job.find("div", class_="card-info card__subtitle")
+				if location_div and location_div.next_element and hasattr(location_div.next_element, 'text'):
+					location = location_div.next_element.text.strip()
+				else:
+					location = "Unknown"
+				# Extract only the city (before comma, semicolon, or dash)
+				city = re.split(r'[;,\-]', location)[0].strip() if location else "Unknown"
+				if not city:
+					city = "Unknown"
+				job_locations.append(city)
 				
 				#Skills
 				#todo: bad written
@@ -90,17 +96,13 @@ class Crawler():
 
 	@count_timer
 	def run(self):
-		""" run the crawler for each url in seed
-			Use multithreading for each GET request
-		"""
+		""" run the crawler using the local jobs.bg.html file only """
 		self.db = DB()
 
-		html = self.fetch_html(self.base_url)
-		self.write_to_file("jobs.bg.html", html)
-
+		# Skip fetching and writing, just read and scrape the local file
 		content = self.scrape_html("jobs.bg.html")
 
-		self.db.drop_jobsbg_table()	
+		self.db.drop_jobsbg_table()
 		self.db.create_jobsbg_table()
 		self.db.insert_rows(content)
 

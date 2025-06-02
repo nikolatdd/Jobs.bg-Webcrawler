@@ -1,23 +1,33 @@
-import mysql.connector as mc
-try:
-    from read_config import read_db_config
-except:
-    from lib.read_config import read_db_config
+import pymysql
+import configparser
+import os
 
 class DB():
     def __init__(self):
-        self.mysql_config = read_db_config('config.ini', 'mysql')
-        print(self.mysql_config)
-        try:
-            self.conn = mc.connect(**self.mysql_config)
-            # self.drop_jobsbg_table()
-            # self.create_jobsbg_table()
-            
-        except mc.Error as e:
-            print(e)
+        config = configparser.ConfigParser()
+        config_path = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
+        config.read(config_path)
 
+        mysql_config = config['mysql']
+        # [DEBUG] print removed for production cleanliness
+        try:
+            self.conn = pymysql.connect(
+                host=mysql_config['HOST'],
+                user=mysql_config['USER'],
+                password=mysql_config['PASSWORD'],
+                database=mysql_config['DATABASE'],
+                port=int(mysql_config['PORT']),
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except Exception as e:
+            print(f"[DB ERROR] Could not connect to MySQL: {e}")
+            self.conn = None
 
     def create_jobsbg_table(self):
+        if not self.conn:
+            print("[DB ERROR] No database connection.")
+            return
         sql = """
             CREATE TABLE IF NOT EXISTS jobsbg(
                 title VARCHAR(100) NOT NULL,
@@ -29,74 +39,62 @@ class DB():
                 CONSTRAINT title_date UNIQUE (title, pub_date)
             );
         """
-
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
             self.conn.commit()
 
     def drop_jobsbg_table(self):
-        sql = "DROP TABLE IF EXISTS jobsbg";
-
+        if not self.conn:
+            print("[DB ERROR] No database connection.")
+            return
+        sql = "DROP TABLE IF EXISTS jobsbg"
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
             self.conn.commit()
 
     def insert_rows(self, rows_data):
-        
+        if not self.conn:
+            print("[DB ERROR] No database connection.")
+            return
         sql = """
                 INSERT IGNORE INTO jobsbg
                 (title, pub_date, location, skills)
                 VALUES ( %s, %s, %s, %s) 
-            """ 
+            """
         with self.conn.cursor() as cursor:
             cursor.executemany(sql, rows_data)
             self.conn.commit()
 
-    def insert_row(self, row_data):
-
-        sql = """
-            INSERT IGNORE INTO jobsbg
-                (title, pub_date, location, skills ,created_at, updated_at)
-                VALUES ( %s, %s, %s, %s)
-        """
-
-        with self.conn.cursor(prepared=True) as cursor:
-            cursor.execute(sql, tuple(row_data.values()))
-            self.conn.commit()
-
     def select_all_data(self):
-        sql = "SELECT title, pub_date, location, skills ,created_at, updated_at FROM  jobsbg"
-
+        if not self.conn:
+            print("[DB ERROR] No database connection.")
+            return []
+        sql = "SELECT title, pub_date, location, skills, created_at, updated_at FROM jobsbg"
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
-            result = cursor.fetchall()
-
-        return result
+            return cursor.fetchall()
 
     def get_last_updated_date(self):
-        sql = 'SELECT MAX(updated_at) AS "Max Date" FROM jobsbg;'
+        if not self.conn:
+            print("[DB ERROR] No database connection.")
+            return None
+        sql = 'SELECT MAX(updated_at) AS max_date FROM jobsbg'
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
             result = cursor.fetchone()
-
-        if result:
-            return result[0]
-        else:
-            raise ValueError('No data in table')
+            if result:
+                return result['max_date']
+            else:
+                return None
 
     def get_column_names(self):
-        sql = "SELECT title, pub_date, location, skills ,created_at, updated_at FROM jobsbg LIMIT 1;"
-
-        with self.conn.cursor() as cursor:
-            cursor.execute(sql)
-            result = cursor.fetchone()
+        # Just return the column names from the schema (hardcoded)
         return ["title","pub_date","location", "skills", "created_at", "updated_at"]
+
 
 if __name__ == '__main__':
     db = DB()
     db.drop_jobsbg_table()
     db.create_jobsbg_table()
-    columnnames = db.get_column_names()
-    print(columnnames)
-    db.get_last_updated_date()
-        
+    print(db.get_column_names())
+    print(db.get_last_updated_date())
